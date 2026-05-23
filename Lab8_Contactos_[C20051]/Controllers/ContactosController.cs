@@ -1,5 +1,7 @@
-﻿using Lab8_Contactos_C20051.Models;
+﻿using Lab8_Contactos_C20051.Data;
+using Lab8_Contactos_C20051.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Lab8_Contactos_C20051.Controllers
 {
@@ -7,25 +9,23 @@ namespace Lab8_Contactos_C20051.Controllers
     [Route("api/[controller]")]
     public class ContactosController : ControllerBase
     {
-        private static readonly List<Contacto> _contactos = new()
+        private readonly AppDbContext _context;
+
+        public ContactosController(AppDbContext context)
         {
-            new Contacto { Id = 1, Nombre = "Ana Pérez",      Telefono = "8888-1111" },
-            new Contacto { Id = 2, Nombre = "Carlos Mora",    Telefono = "8888-2222" },
-            new Contacto { Id = 3, Nombre = "María Jiménez",  Telefono = "8888-3333" },
-            new Contacto { Id = 4, Nombre = "Luis Rodríguez", Telefono = "8888-4444" },
-            new Contacto { Id = 5, Nombre = "Sofía Castro",   Telefono = "8888-5555" },
-        };
+            _context = context;
+        }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Contacto>> GetTodos()
+        public async Task<ActionResult<IEnumerable<Contacto>>> GetTodos()
         {
-            return Ok(_contactos);
+            return Ok(await _context.Contactos.ToListAsync());
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Contacto> GetPorId(int id)
+        public async Task<ActionResult<Contacto>> GetPorId(int id)
         {
-            var contacto = _contactos.FirstOrDefault(c => c.Id == id);
+            var contacto = await _context.Contactos.FindAsync(id);
             if (contacto == null)
                 return NotFound(new { error = $"No se encontró el contacto con id {id}" });
 
